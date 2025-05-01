@@ -1,28 +1,27 @@
 Global:
-  use_gpu: true
-  epoch_num: 100
+  use_gpu: True
+  epoch_num: 400
   log_smooth_window: 20
   print_batch_step: 20
-  save_model_dir: ./output/SLANet
+  save_model_dir: ./output/SLANet_plus
   save_epoch_step: 400
-  # evaluation is run every 1000 iterations after the 0th iteration
-  eval_batch_step: [0, 1000]
+  # evaluation is run every 331 iterations after the 0th iteration
+  eval_batch_step: [0, 331]
   cal_metric_during_train: True
-  pretrained_model: "https://paddle-model-ecology.bj.bcebos.com/paddlex/official_pretrained_model/SLANet_pretrained.pdparams"
-  checkpoints:
-  save_inference_dir: ./output/SLANet/infer
+  pretrained_model: "https://paddle-model-ecology.bj.bcebos.com/paddlex/official_pretrained_model/SLANet_plus_pretrained.pdparams"
+  checkpoints: 
+  save_inference_dir: ./output/SLANet_plus/infer
   use_visualdl: False
   infer_img: ppstructure/docs/table/table.jpg
   # for data or label process
-  character_dict_path: ppocr/utils/dict/table_structure_dict.txt
+  character_dict_path: ppocr/utils/dict/table_structure_dict_ch.txt
   character_type: en
   max_text_length: &max_text_length 500
-  box_format: &box_format 'xyxy' # 'xywh', 'xyxy', 'xyxyxyxy'
+  box_format: &box_format xyxyxyxy # 'xywh', 'xyxy', 'xyxyxyxy'
   infer_mode: False
   use_sync_bn: True
-  save_res_path: 'output/infer'
-  d2s_train_image_shape: [3, -1, -1]
-  amp_custom_white_list: ['concat', 'elementwise_sub', 'set_value']
+  save_res_path: output/infer
+  d2s_train_image_shape: [3, 488, 488]
 
 Optimizer:
   name: Adam
@@ -30,10 +29,7 @@ Optimizer:
   beta2: 0.999
   clip_norm: 5.0
   lr:
-    name: Piecewise
     learning_rate: 0.001
-    decay_epochs : [40, 50]
-    values : [0.001, 0.0001, 0.00005]
   regularizer:
     name: 'L2'
     factor: 0.00000
@@ -44,8 +40,8 @@ Architecture:
   Backbone:
     name: PPLCNet
     scale: 1.0
-    pretrained: true
-    use_ssld: true
+    pretrained: True
+    use_ssld: True
   Neck:
     name: CSPPAN
     out_channels: 96
@@ -53,7 +49,7 @@ Architecture:
     name: SLAHead
     hidden_size: 256
     max_text_length: *max_text_length
-    loc_reg_num: &loc_reg_num 4
+    loc_reg_num: &loc_reg_num 8
 
 Loss:
   name: SLALoss
@@ -71,14 +67,15 @@ Metric:
   compute_bbox_metric: False
   loc_reg_num: *loc_reg_num
   box_format: *box_format
+  del_thead_tbody: True
 
 Train:
   dataset:
     name: PubTabDataSet
-    data_dir: train_data/table/pubtabnet/train/
-    label_file_list: [train_data/table/pubtabnet/PubTabNet_2.0.0_train.jsonl]
+    data_dir: train_data/table/train/
+    label_file_list: [train_data/table/train.txt]
     transforms:
-      - DecodeImage: # load image
+      - DecodeImage:
           img_mode: BGR
           channel_first: False
       - TableLabelEncode:
@@ -111,10 +108,10 @@ Train:
 Eval:
   dataset:
     name: PubTabDataSet
-    data_dir: train_data/table/pubtabnet/val/
-    label_file_list: [train_data/table/pubtabnet/PubTabNet_2.0.0_val.jsonl]
+    data_dir: train_data/table/val/
+    label_file_list: [train_data/table/val.txt]
     transforms:
-      - DecodeImage: # load image
+      - DecodeImage:
           img_mode: BGR
           channel_first: False
       - TableLabelEncode:
