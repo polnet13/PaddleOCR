@@ -6,6 +6,9 @@ __pycache__/
 
 # C extensions
 *.so
+*.jpg
+*.env
+*.png
 
 inference/
 inference_results/
@@ -23,6 +26,8 @@ log/
 .clang-format
 .clang_format.hook
 
+dataset/
+models/
 build/
 dist/
 paddleocr.egg-info/
